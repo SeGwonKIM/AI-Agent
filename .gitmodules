@@ -1,0 +1,9 @@
+[submodule "New_project2"]
+	path = New_project2
+	url = https://github.com/KskFather/New_project2.git
+[submodule "aiffel_test"]
+	path = aiffel_test
+	url = https://github.com/SeGwonKIM/aiffel_test.git
+[submodule "kskFather_New_Project"]
+	path = kskFather_New_Project
+	url = https://github.com/SeGwonKIM/kskFather_New_Project.git
