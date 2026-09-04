@@ -1,0 +1,13 @@
+# 내 할 일 목록이 들어 있는 파일. 저장소에 올리지 않는다.
+todo.db
+todo.db-journal
+todo.db-wal
+todo.db-shm
+
+# 비밀값
+.env
+.env.*
+!.env.example
+
+__pycache__/
+*.py[cod]
