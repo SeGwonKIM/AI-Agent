@@ -80,7 +80,7 @@ PYTHONIOENCODING=utf-8 python .claude/skills/lecture-extract/mhtml2md.py 0907 --
 ```
 
 - **주말**은 자동으로 걸러진다.
-- **공휴일**은 `강의노트/휴일.txt` 에 한 줄씩(`YYYY-MM-DD`) 적어 둔 것만 걸러진다.
+- **공휴일**은 `강의노트/holidays.txt` 에 한 줄씩(`YYYY-MM-DD`) 적어 둔 것만 걸러진다.
   새 공휴일이 생기면 그 파일에 추가한다 — 스크립트가 달력을 알지는 못한다.
 - 날짜가 정말 맞다면(보강 등) `--any-day` 로 검사를 건너뛴다.
 

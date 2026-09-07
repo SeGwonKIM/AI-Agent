@@ -117,8 +117,8 @@ def sort_key(path: Path):
 
 
 def holidays() -> set[str]:
-    """강의노트/휴일.txt 에 적어 둔 공휴일 (한 줄에 YYYY-MM-DD, # 뒤는 주석)."""
-    path = NOTE_ROOT / "휴일.txt"
+    """강의노트/holidays.txt 에 적어 둔 공휴일 (한 줄에 YYYY-MM-DD, # 뒤는 주석)."""
+    path = NOTE_ROOT / "holidays.txt"
     if not path.exists():
         return set()
     out = set()
@@ -140,7 +140,7 @@ def check_lecture_day(full: str) -> None:
     if d.weekday() >= 5:                      # 5=토, 6=일
         reason = ["월", "화", "수", "목", "금", "토", "일"][d.weekday()] + "요일 (주말)"
     elif full in holidays():
-        reason = "공휴일 (강의노트/휴일.txt 에 등재)"
+        reason = "공휴일 (강의노트/holidays.txt 에 등재)"
     if not reason:
         return
 
