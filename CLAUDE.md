@@ -15,7 +15,7 @@
 | `todo_app/` | 5강 DB 실습 — 파이썬 내장 서버 + SQLite | 이 저장소 |
 | `ksk_game/` `ksk_game1/` `bom_game/` | 단일 파일 HTML 게임 | **각자 독립 저장소** |
 | `blog_ksk/` | Jekyll 블로그 (minimal-mistakes) | **독립 저장소** |
-| `saju_tarot/` | 사주·타로 웹서비스 (FastAPI + Vite/TS) | **독립 저장소** (`SeGwonKIM/Saju_Talot`) |
+| `saju_tarot/` | 사주·타로 웹서비스 (FastAPI + Vite/TS) | **독립 저장소** (`SeGwonKIM/Saju_Tarot`) |
 | `New_project2/` `aiffel_test/` `kskFather_New_Project/` | 서브모듈 | **git submodule** |
 | `0830_NewProject01/` `MyGithub0831/` `New_Project082901/` `PR_Demo_0831/` `Project_0831/` | 초기 Git/GitHub 실습 폴더 (README + figure) | 이 저장소 |
 
