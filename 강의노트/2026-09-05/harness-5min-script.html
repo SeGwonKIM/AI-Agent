@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>하네스 고르는 눈</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    /* 종이 쪽 — 차가운 회백색, 개발 도구 이야기에 맞춰 청색 쪽으로 살짝 기울인 중성색 */
+    --ground: #f5f6f8;
+    --surface: #ffffff;
+    --ink: #16191f;
+    --ink-2: #3d434e;
+    --muted: #6b7280;
+    --rule: #dde1e8;
+    --rule-soft: #e9ecf1;
+    --accent: #9a5b06;      /* 구운 호박색 — 구조 표시와 강조 */
+    --accent-soft: #fdf3e3;
+    --caution: #9c3b2c;     /* 안전·비용 단락의 경고 톤 */
+    --caution-soft: #fbeeeb;
+
+    --t-title: clamp(33px, 5.2vw, 46px);
+    --t-h2: clamp(24px, 3.4vw, 31px);
+    --t-h3: 19px;
+    --t-body: 18px;
+    --t-small: 13.5px;
+
+    --serif: 'Gowun Batang', 'Batang', 'Nanum Myeongjo', serif;
+    --sans: 'IBM Plex Sans KR', 'Malgun Gothic', 'Segoe UI', sans-serif;
+    --mono: 'IBM Plex Mono', 'Consolas', monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14161b;
+      --surface: #1b1e25;
+      --ink: #eceef2;
+      --ink-2: #c2c7d1;
+      --muted: #949bab;
+      --rule: #2d323c;
+      --rule-soft: #262b34;
+      --accent: #e2a856;
+      --accent-soft: #2a2318;
+      --caution: #e08a76;
+      --caution-soft: #2b1e1b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #14161b;
+    --surface: #1b1e25;
+    --ink: #eceef2;
+    --ink-2: #c2c7d1;
+    --muted: #949bab;
+    --rule: #2d323c;
+    --rule-soft: #262b34;
+    --accent: #e2a856;
+    --accent-soft: #2a2318;
+    --caution: #e08a76;
+    --caution-soft: #2b1e1b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--t-body);
+    font-weight: 300;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sheet {
+    max-width: 780px;
+    margin: 0 auto;
+    background: var(--surface);
+    border-left: 1px solid var(--rule-soft);
+    border-right: 1px solid var(--rule-soft);
+    padding: 56px 56px 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+  }
+
+  /* ── 표제 ─────────────────────────────── */
+  .masthead { display: flex; flex-direction: column; gap: 14px; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: var(--t-small);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-size: var(--t-title);
+    font-weight: 700;
+    line-height: 1.22;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+  .deck {
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1.7;
+    color: var(--ink-2);
+    max-width: 30em;
+  }
+  .colophon {
+    margin-top: 6px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .colophon b { color: var(--ink-2); font-weight: 500; }
+
+  /* ── 단락 ─────────────────────────────── */
+  section { display: flex; flex-direction: column; gap: 18px; }
+  .head { display: flex; flex-direction: column; gap: 7px; }
+  .cue {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    letter-spacing: .1em;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cue::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--rule-soft);
+  }
+  h2 {
+    font-family: var(--serif);
+    font-size: var(--t-h2);
+    font-weight: 700;
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: .7em;
+    font-weight: 500;
+    color: var(--accent);
+    margin-right: .38em;
+    letter-spacing: .02em;
+  }
+  h3 {
+    font-family: var(--sans);
+    font-size: var(--t-h3);
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-top: 8px;
+  }
+  h3 .kind {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: .08em;
+    margin-left: 8px;
+  }
+  p { max-width: 63ch; }
+  p b, li b { font-weight: 600; color: var(--ink); }
+  p em {
+    font-style: normal;
+    color: var(--muted);
+    font-size: 16px;
+  }
+
+  /* 낭독 중 힘주는 한 문장 */
+  .keyline {
+    font-family: var(--serif);
+    font-size: 21px;
+    line-height: 1.65;
+    color: var(--ink);
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 18px 22px;
+    max-width: none;
+  }
+  .keyline.warn {
+    background: var(--caution-soft);
+    border-left-color: var(--caution);
+  }
+  .keyline b { font-weight: 700; }
+
+  /* 다섯 가지 기준 — 순서가 아니라 점검 항목이므로 번호는 낭독 순서 표시용 */
+  ol.criteria { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  ol.criteria li {
+    display: grid;
+    grid-template-columns: 2.1em 1fr;
+    gap: 4px 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  ol.criteria li:last-child { border-bottom: 0; padding-bottom: 0; }
+  ol.criteria .k {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    padding-top: .45em;
+    letter-spacing: .04em;
+  }
+  ol.criteria .v { max-width: 58ch; }
+
+  /* 안전 습관 — 실제 순서가 있는 절차 */
+  ol.steps { list-style: none; counter-reset: st; display: flex; flex-direction: column; gap: 16px; }
+  ol.steps li {
+    counter-increment: st;
+    position: relative;
+    padding-left: 42px;
+    max-width: 60ch;
+  }
+  ol.steps li::before {
+    content: counter(st);
+    position: absolute; left: 0; top: .28em;
+    width: 26px; height: 26px;
+    border: 1px solid var(--caution);
+    border-radius: 50%;
+    color: var(--caution);
+    font-family: var(--mono);
+    font-size: 13px;
+    display: grid; place-items: center;
+    line-height: 1;
+  }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 20px;
+    font-size: var(--t-small);
+    line-height: 1.75;
+    color: var(--muted);
+    max-width: 68ch;
+  }
+  footer strong { color: var(--ink-2); font-weight: 500; }
+
+  @media (max-width: 620px) {
+    .sheet { padding: 34px 20px 48px; gap: 36px; border: 0; }
+    body { font-size: 17px; }
+    .deck { font-size: 18px; }
+    .keyline { font-size: 19px; padding: 15px 17px; }
+  }
+
+  @media print {
+    body { background: #fff; color: #000; font-size: 11.5pt; }
+    .sheet { max-width: none; border: 0; padding: 0; gap: 26px; }
+    .keyline { background: #f4f4f4; }
+    section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<article class="sheet">
+
+  <header class="masthead">
+    <div class="eyebrow">5분 발표 대본</div>
+    <h1>AI 코딩 도구,<br>어떻게 고를까?</h1>
+    <p class="deck">이름을 외우는 대신 고르는 눈을 가져가기.<br>딱 네 가지 — 종류, 기준, 안전, 비용.</p>
+    <div class="colophon">
+      <span>분량 <b>5분</b></span>
+      <span>단락 <b>도입 + 6 + 마무리</b></span>
+      <span>출처 <b>2026-09-05 강의 4번</b></span>
+      <span>굵은 글씨 = <b>힘주어 읽는 곳</b></span>
+    </div>
+  </header>
+
+  <section>
+    <div class="head">
+      <div class="cue">0:00 – 0:35 · 도입</div>
+      <h2>이름이 아니라, 고르는 눈</h2>
+    </div>
+    <p>먼저 질문부터 드릴게요. Claude Code, Cursor, Copilot, Lovable, Devin… 이름을 몇 개나 들어보셨나요? 지금 이 분야는 <b>도구 이름을 외우는 게 의미가 없을 정도로</b> 빨리 바뀝니다. 그래서 오늘은 이름이 아니라 <b>고르는 눈</b>을 가져가시는 게 목표입니다.</p>
+    <p>딱 네 가지만 말씀드립니다. 종류, 기준, 안전, 비용.</p>
+  </section>
+
+  <section>
+    <div class="head">
+      <div class="cue">0:35 – 1:15 · 기본 공식</div>
+      <h2><span class="num">①</span>에이전트 = 모델 + 하네스</h2>
+    </div>
+    <p>핵심 공식이 하나 있습니다. <b>에이전트 = 모델 + 하네스.</b></p>
+    <p>모델은 두뇌입니다. GPT, Claude, Gemini 같은 것들이죠. 그런데 두뇌만 있으면 아무것도 못 합니다. 생각만 하고 끝나요.</p>
+    <p>하네스는 그 두뇌에 붙는 <b>손발과 작업장</b>입니다. 파일을 열어 보고, 고쳐 쓰고, 터미널 명령을 실행하고, 결과를 다시 읽는 <b>몸</b>이죠. 하네스라는 말은 원래 말에 채우는 마구, 안전벨트를 뜻합니다.</p>
+    <p class="keyline">여기서 중요한 포인트 — <b>같은 모델이라도 하네스가 다르면 결과가 다릅니다.</b></p>
+    <p>실제로 벤치마크 점수는 모델보다 하네스가 더 좌우한다고 해요. 그래서 도구를 고른다는 건 모델을 고르는 게 아니라 하네스를 고르는 일입니다.</p>
+  </section>
+
+  <section>
+    <div class="head">
+      <div class="cue">1:15 – 2:05 · 종류</div>
+      <h2><span class="num">②</span>하네스는 네 부류뿐입니다</h2>
+    </div>
+    <p>하네스는 종류가 아주 많지만 <b>크게 네 부류</b>뿐입니다. 나누는 기준은 딱 하나 — <b>어디서 돌고, 내가 얼마나 지켜보느냐</b>입니다.</p>
+
+    <h3>브라우저형 <span class="kind">Lovable · Bolt · Replit</span></h3>
+    <p>웹에서 클릭 몇 번으로 만들고 배포까지 한 번에. 문턱이 가장 낮습니다. <em>무인 키오스크에서 주문하는 느낌이죠.</em></p>
+
+    <h3>편집기형 <span class="kind">Cursor · Copilot</span></h3>
+    <p>VS Code 같은 편집기 안에서 AI가 고친 걸 눈으로 보며 승인·취소합니다. <em>옆자리에서 같이 일하는 느낌입니다.</em></p>
+
+    <h3>터미널형 <span class="kind">Claude Code · Codex CLI</span></h3>
+    <p>검은 명령창에서 돌아갑니다. 깊고 강력하지만 낯설어요. <em>주방 안쪽까지 들어가는 셈입니다.</em></p>
+
+    <h3>클라우드형 <span class="kind">Devin · Jules</span></h3>
+    <p>"이 이슈 고쳐 줘" 하고 통째로 맡기면 백그라운드에서 일하고 결과를 초안으로 가져옵니다. <em>배달 주문이에요 — 만드는 과정을 내가 안 봅니다.</em></p>
+
+    <p class="keyline">앞의 셋은 내 컴퓨터에서 <b>내가 지켜보는</b> 쪽, 마지막은 <b>멀리 맡기는</b> 쪽입니다.</p>
+  </section>
+
+  <section>
+    <div class="head">
+      <div class="cue">2:05 – 2:50 · 기준</div>
+      <h2><span class="num">③</span>고를 때 볼 다섯 가지</h2>
+    </div>
+    <p>그럼 뭘 고를까요. 강의의 결론은 시원합니다 — <b>정답 하나는 없다.</b> 프레임워크 고를 때와 똑같아요. 정답이 아니라 <b>내 조건</b>입니다.</p>
+    <p>볼 것은 다섯 가지입니다.</p>
+    <ol class="criteria">
+      <li><span class="k">하나</span><span class="v"><b>모델을 골라 쓸 수 있나.</b> 한 회사 모델만 되는지, 아무 모델이나 꽂을 수 있는지. 오픈소스 계열이 자유롭습니다.</span></li>
+      <li><span class="k">둘</span><span class="v"><b>비용 구조.</b> 월 정액인가, 아니면 프로그램은 무료지만 쓴 만큼 API 요금인가. 후자는 많이 쓰면 확 오릅니다.</span></li>
+      <li><span class="k">셋</span><span class="v"><b>오픈소스인가.</b> 오픈소스면 그 회사가 서비스를 접어도 남이 이어받아 살릴 수 있습니다. 실제로 2026년에 한 오픈소스 확장이 종료돼서 이 리스크를 보여줬죠.</span></li>
+      <li><span class="k">넷</span><span class="v"><b>터미널이 편한가.</b> 편하면 CLI형, 아니면 편집기형.</span></li>
+      <li><span class="k">다섯</span><span class="v"><b>맡길까 지켜볼까.</b> 한 줄씩 보며 승인하려면 편집기형, 통째로 맡기고 결과만 검토하려면 클라우드형.</span></li>
+    </ol>
+    <p>그리고 실무자들도 <b>하나만 쓰지 않습니다.</b> 섞어 씁니다.</p>
+  </section>
+
+  <section>
+    <div class="head">
+      <div class="cue">2:50 – 3:20 · 시작점</div>
+      <h2><span class="num">④</span>처음이라면 이 순서로</h2>
+    </div>
+    <p>처음이라면 어디서 시작할까요. 순서가 있습니다.</p>
+    <p>만들기부터 배포까지 클릭으로 끝내고 싶다면 <b>브라우저형</b>이 문턱이 가장 낮습니다.</p>
+    <p>코드를 조금씩 보며 배우고 싶다면 <b>편집기형</b>이 좋습니다. AI가 고친 걸 눈으로 보고 승인·취소하며 감을 익히니까요. 무료로 가볍게는 Copilot 무료 티어, 좀 더 본격적으로는 Cursor.</p>
+    <p><b>터미널형</b>은 힘이 세지만 검은 화면이 익숙해진 뒤에 넘어가세요.</p>
+    <p>그리고 <b>클라우드형은 초보의 첫 도구로 권하지 않습니다.</b> "알아서 다 해 줌"이 매력이지만, 결과를 검토하고 판단할 안목이 아직 없으면 통제감이 떨어져요. 뭐가 잘못됐는지도 모르는 채 받게 됩니다.</p>
+  </section>
+
+  <section>
+    <div class="head">
+      <div class="cue">3:20 – 4:05 · 안전</div>
+      <h2><span class="num">⑤</span>에이전트는 실제로 파일을 지웁니다</h2>
+    </div>
+    <p>이제 제일 중요한 이야기입니다. <b>안전.</b></p>
+    <p>에이전트는 단순 답변기가 아닙니다. 실제로 <b>파일을 지우고, 명령을 실행하고, 외부에 요청을 보낼 수 있는</b> 존재예요. 그래서 좋은 도구는 위험한 행동 전에 "이거 해도 될까요?"를 묻습니다.</p>
+    <p>문제는 이게 반복되면 사람이 무심코 "예"만 누르게 된다는 겁니다. 조사에 따르면 사용자들이 권한 요청의 <b>약 93%를 그냥 승인</b>한다고 해요. 거의 다 그냥 누르는 거죠.</p>
+    <p>그래서 습관 세 가지만 지키시면 됩니다.</p>
+    <ol class="steps">
+      <li><b>중요한 폴더에서 자동 수락을 켜지 마세요.</b> 문서·사진 폴더, 회사 자료 폴더에서는 매번 확인 모드로.</li>
+      <li><b>되돌릴 지점을 먼저 만드세요.</b> 위험한 작업 전에 커밋해 두면 잘못돼도 그 지점으로 돌아갑니다.</li>
+      <li>그리고 이게 <b>핵심 한 문장</b>입니다.</li>
+    </ol>
+    <p class="keyline warn"><b>"아무것도 안 물어봄"과 "중요한 것 전체 접근"을 동시에 켜지 마라.</b></p>
+    <p>하나씩은 괜찮은데 둘을 같이 켜면 사고가 납니다.</p>
+  </section>
+
+  <section>
+    <div class="head">
+      <div class="cue">4:05 – 4:40 · 비용</div>
+      <h2><span class="num">⑥</span>왜 비싸고, 왜 길어지면 헤매나</h2>
+    </div>
+    <p>마지막, <b>비용</b>입니다. 에이전트는 왜 비쌀 수 있을까요.</p>
+    <p>에이전트는 계획-실행-관찰-반성 루프를 여러 번 돕니다. 그리고 매번 앞선 대화와 결과를 통째로 다시 읽어요. 그래서 보통 채팅보다 토큰을 <b>4배</b>, 여러 에이전트가 협업하면 <b>15배까지</b> 씁니다. 토큰은 AI가 읽고 쓰는 글자 뭉치 단위이면서 곧 요금 단위입니다.</p>
+    <p>단계가 늘어나면 입력량은 단순 비례보다 빠르게 커집니다. <em>택시 미터기가 정차 중에도 계속 도는 셈이죠.</em></p>
+    <p>그리고 부작용이 하나 더 있습니다. 대화가 길어져 한도가 꽉 차면 <b>AI가 헤맵니다.</b> 아까 정한 걸 잊고, 앞뒤가 안 맞고, 없는 파일명을 지어내요. 이걸 반쯤 농담으로 <b>"컨텍스트 부패"</b>라고 부릅니다. <em>책상에 서류가 너무 쌓이면 정작 필요한 걸 못 찾는 상태죠.</em></p>
+    <p class="keyline warn">해법은 간단합니다. <b>한 번에 거대한 작업을 시키지 말고 작게 쪼개기.</b> 그리고 <b>한 가지 일이 끝나면 새 대화로 시작하기.</b></p>
+    <p>이게 오히려 결과가 좋습니다.</p>
+  </section>
+
+  <section>
+    <div class="head">
+      <div class="cue">4:40 – 5:00 · 마무리</div>
+      <h2>이름을 외우지 말고, 개념을 잡으세요</h2>
+    </div>
+    <p>정리하겠습니다.</p>
+    <p>이 바닥은 정말 빠르게 바뀝니다. 이름, 가격, 무료 정책, 회사까지 짧은 기간에도 바뀌어요. 그래서 <b>도구 이름을 외우는 건 의미가 적습니다.</b></p>
+    <p>대신 개념 세 개만 잡아 두시면 됩니다. <b>에이전트는 모델 더하기 하네스</b>, <b>MCP는 내 자료에 꽂는 연결</b>, <b>스킬은 반복 작업을 외워 두는 것.</b></p>
+    <p>이것만 있으면 어떤 새 도구가 나와도 "아, 이건 하네스가 이렇구나, MCP 되나?" 하고 바로 판단할 수 있습니다.</p>
+    <p>그리고 고를 때는 남들이 최고라는 것 말고 <b>내 조건</b>으로 고르세요. 되돌리기 쉬운 작은 수정으로 먼저 시험해 보는 게 가장 좋은 비교 방법입니다.</p>
+    <p>이상입니다. 감사합니다.</p>
+  </section>
+
+  <footer>
+    <strong>출처</strong> — 모두의연구소 캠프 2026-09-05 강의 4번 「하네스 종류 — 어떤 AI 코딩 도구를 고를까」를 발표용으로 재구성.
+    강의가 인용한 원출처: Faros AI "Best AI Coding Agents 2026" · DEV "Every AI Coding CLI in 2026" ·
+    Anthropic Engineering (권한 승인률, 멀티 에이전트 토큰 사용량, Effective context engineering).
+  </footer>
+
+</article>
+
+</body>
+</html>

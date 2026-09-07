@@ -1,0 +1,63 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "saju-v3",
+      "runtimeExecutable": "C:/New_sajutarot/backend/.venv/Scripts/python.exe",
+      "runtimeArgs": [
+        "-m",
+        "uvicorn",
+        "app.main:app",
+        "--app-dir",
+        "C:/New_sajutarot/backend",
+        "--port",
+        "8100"
+      ],
+      "port": 8100
+    },
+    {
+      "name": "todo-app",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "C:/AI-Agent/todo_app/app.py"
+      ],
+      "port": 8765
+    },
+    {
+      "name": "saju-server-public",
+      "runtimeExecutable": "C:/AI-Agent/saju_tarot/backend/.venv/Scripts/python.exe",
+      "runtimeArgs": [
+        "-c",
+        "import os,sys; os.environ['APP_ENV']='production'; sys.path.insert(0,'C:/AI-Agent/saju_tarot/backend'); import uvicorn; uvicorn.run('app.main:app', host='0.0.0.0', port=8000)"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "saju-server",
+      "runtimeExecutable": "C:/AI-Agent/saju_tarot/backend/.venv/Scripts/python.exe",
+      "runtimeArgs": [
+        "-m",
+        "uvicorn",
+        "app.main:app",
+        "--app-dir",
+        "C:/AI-Agent/saju_tarot/backend",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "saju-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--prefix",
+        "saju_tarot/frontend"
+      ],
+      "port": 5173
+    }
+  ]
+}
