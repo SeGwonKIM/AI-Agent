@@ -28,7 +28,7 @@
       "runtimeExecutable": "C:/AI-Agent/saju_tarot/backend/.venv/Scripts/python.exe",
       "runtimeArgs": [
         "-c",
-        "import os,sys; os.environ['APP_ENV']='production'; sys.path.insert(0,'C:/AI-Agent/saju_tarot/backend'); import uvicorn; uvicorn.run('app.main:app', host='0.0.0.0', port=8000)"
+        "import os,sys; os.environ['APP_ENV']='production'; sys.path.insert(0,'C:/AI-Agent/saju_tarot/backend'); import uvicorn; uvicorn.run('app.main:app', host='0.0.0.0', port=8000, server_header=False)"
       ],
       "port": 8000
     },
@@ -44,7 +44,8 @@
         "--host",
         "0.0.0.0",
         "--port",
-        "8000"
+        "8000",
+        "--no-server-header"
       ],
       "port": 8000
     },
