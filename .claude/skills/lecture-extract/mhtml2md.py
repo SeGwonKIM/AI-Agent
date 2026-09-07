@@ -6,12 +6,13 @@ multipart/related)이다. 안에 HTML 한 조각과 그림·CSS 조각들이 함
 한 파일로 이어 붙인다.
 
 쓰는 법:
-    PYTHONIOENCODING=utf-8 python .claude/skills/lecture-extract/mhtml2md.py 2026-09-05
-    PYTHONIOENCODING=utf-8 python .claude/skills/lecture-extract/mhtml2md.py 0905 --list
+    PYTHONIOENCODING=utf-8 python .claude/skills/lecture-extract/mhtml2md.py 2026-09-07
+    PYTHONIOENCODING=utf-8 python .claude/skills/lecture-extract/mhtml2md.py 0907 --list
 
   기본      원본.md 를 만든다 (이미 있으면 --force 없이는 덮지 않는다)
   --list    파일별 step 번호만 출력한다 (강의 URL 의 steps/NNNNN 로 어느 강의인지 찾을 때)
   --force   원본.md 를 덮어쓴다
+  --any-day  주말·공휴일 검사를 건너뛴다 (강의는 평일에만 열린다)
 """
 
 from __future__ import annotations
@@ -19,6 +20,7 @@ from __future__ import annotations
 import email
 import re
 import sys
+from datetime import date, timedelta
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -114,17 +116,60 @@ def sort_key(path: Path):
     return (0, int(m.group(1))) if m else (1, path.stem)
 
 
-def resolve_dates(arg: str) -> tuple[Path, Path]:
-    """'2026-09-05' 또는 '0905' 를 받아 (강의소스 폴더, 강의노트 폴더) 를 돌려준다.
+def holidays() -> set[str]:
+    """강의노트/휴일.txt 에 적어 둔 공휴일 (한 줄에 YYYY-MM-DD, # 뒤는 주석)."""
+    path = NOTE_ROOT / "휴일.txt"
+    if not path.exists():
+        return set()
+    out = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        day = line.split("#")[0].strip()
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}", day):
+            out.add(day)
+    return out
+
+
+def check_lecture_day(full: str) -> None:
+    """강의는 평일에만 열린다 — 주말·공휴일이면 폴더 이름이 잘못된 것이다.
+
+    2026-09-05(토)를 09-07(월) 강의로 잘못 적어 두는 실수가 실제로 있었다.
+    폴더명을 +1 하다 주말을 건너뛰지 않으면 이렇게 어긋난다.
+    """
+    d = date.fromisoformat(full)
+    reason = None
+    if d.weekday() >= 5:                      # 5=토, 6=일
+        reason = ["월", "화", "수", "목", "금", "토", "일"][d.weekday()] + "요일 (주말)"
+    elif full in holidays():
+        reason = "공휴일 (강의노트/휴일.txt 에 등재)"
+    if not reason:
+        return
+
+    nxt = d
+    while nxt.weekday() >= 5 or nxt.isoformat() in holidays():
+        nxt += timedelta(days=1)
+    sys.exit(
+        f"{full} 은 {reason} 이라 강의가 없습니다.\n"
+        f"강의는 평일에만 열립니다 — 폴더 이름이 잘못됐을 가능성이 큽니다.\n"
+        f"다음 강의일은 {nxt.isoformat()} ({['월','화','수','목','금'][nxt.weekday()]}) 입니다.\n"
+        f"폴더 이름을 먼저 고치세요:  mv 강의소스/{full[5:7]}{full[8:10]} "
+        f"강의소스/{nxt.strftime('%m%d')}\n"
+        f"(날짜가 정말 맞다면 --any-day 로 검사를 건너뜁니다.)"
+    )
+
+
+def resolve_dates(arg: str, skip_check: bool = False) -> tuple[Path, Path]:
+    """'2026-09-07' 또는 '0907' 를 받아 (강의소스 폴더, 강의노트 폴더) 를 돌려준다.
 
     강의소스는 MMDD, 강의노트는 YYYY-MM-DD 를 쓴다 — 표기가 다르니 주의.
     """
     if re.fullmatch(r"\d{4}-\d{2}-\d{2}", arg):
         full, mmdd = arg, arg[5:7] + arg[8:10]
     elif re.fullmatch(r"\d{4}", arg):
-        mmdd, full = arg, f"2026-{arg[:2]}-{arg[2:]}"
+        mmdd, full = arg, f"{date.today().year}-{arg[:2]}-{arg[2:]}"
     else:
         sys.exit(f"날짜 형식이 아닙니다: {arg}  (YYYY-MM-DD 또는 MMDD)")
+    if not skip_check:
+        check_lecture_day(full)
     return SRC_ROOT / mmdd, NOTE_ROOT / full
 
 
@@ -134,7 +179,7 @@ def main() -> None:
     if not args:
         sys.exit(__doc__)
 
-    src_dir, note_dir = resolve_dates(args[0])
+    src_dir, note_dir = resolve_dates(args[0], "--any-day" in flags)
     if not src_dir.is_dir():
         sys.exit(f"강의소스 폴더가 없습니다: {src_dir}")
 
