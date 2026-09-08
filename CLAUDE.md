@@ -15,6 +15,7 @@
 | `todo_app/` | 5강 DB 실습 — 파이썬 내장 서버 + SQLite | 이 저장소 |
 | `ksk_game/` `ksk_game1/` `bom_game/` | 단일 파일 HTML 게임 | **각자 독립 저장소** |
 | `blog_ksk/` | Jekyll 블로그 (minimal-mistakes) | **독립 저장소** |
+| `ksk_coin/` | 채굴·지분증명 가상 생활경제 시뮬레이터 (단일 HTML) | **독립 저장소** (`SeGwonKIM/ksk_coin`) |
 | `saju_tarot/` | 사주·타로 웹서비스 (FastAPI + Vite/TS) | **독립 저장소** (`SeGwonKIM/Saju_Tarot`) |
 | `New_project2/` `aiffel_test/` `kskFather_New_Project/` | 서브모듈 | **git submodule** |
 | `0830_NewProject01/` `MyGithub0831/` `New_Project082901/` `PR_Demo_0831/` `Project_0831/` | 초기 Git/GitHub 실습 폴더 (README + figure) | 이 저장소 |
@@ -22,7 +23,7 @@
 ## 저장소 경계 — 제일 자주 실수하는 부분
 
 - `C:\AI-Agent` 자체가 저장소(`SeGwonKIM/AI-Agent`)이고, **그 안에 별개 저장소들이 들어 있다.**
-- 게임·블로그·사주타로 작업은 **반드시 해당 폴더 안에서** git 명령을 쓴다.
+- 게임·블로그·사주타로·ksk_coin 작업은 **반드시 해당 폴더 안에서** git 명령을 쓴다.
   루트에서 `git add -A` 를 하면 남의 저장소를 삼키거나 서브모듈 포인터를 망친다.
 - 루트에서 `git status` 를 보면 독립 저장소들이 untracked 로 뜬다 — **정상이다. 커밋하지 않는다.**
 - 서브모듈 3개는 내용을 직접 고치지 말고, 필요하면 원본 저장소에서 작업한 뒤 포인터만 갱신한다.
@@ -98,6 +99,7 @@ git config --global core.excludesFile  ← 연결
 | 강의노트 요약 | `/summarize-lecture` 커맨드 |
 | 블로그에 정리 글 올리기 | `blog-post` 스킬 |
 | Todo 앱 DB 조회 | `todo-db` 스킬 |
+| ksk_coin 기능 추가 (부동산·살림·직업 등) | `ksk_coin/.claude/skills/` 의 `ksk-*` 스킬 |
 
 강의 정리는 위 세 개가 순서대로 이어지는 사슬이다:
 `강의소스/{MMDD}/*.mhtml` → `원본.md` → `summary.md` → 블로그 글.
