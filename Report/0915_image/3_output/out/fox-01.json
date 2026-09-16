@@ -1,0 +1,9 @@
+{
+  "id": "fox-01",
+  "prompt": "a red fox leaping over a fallen log, low-angle close-up shot, golden hour backlight, misty pine forest, cinematic photorealistic.",
+  "seed": 2115970659,
+  "model": "stabilityai/sdxl-turbo",
+  "steps": 4,
+  "guidance_scale": 0.0,
+  "dtype": "float16"
+}

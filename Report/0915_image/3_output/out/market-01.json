@@ -1,0 +1,9 @@
+{
+  "id": "market-01",
+  "prompt": "an elderly baker arranging bread on a tray, over-the-shoulder shot, warm tungsten light, narrow old town bakery, documentary photography.",
+  "seed": 2859556172,
+  "model": "stabilityai/sdxl-turbo",
+  "steps": 4,
+  "guidance_scale": 0.0,
+  "dtype": "float16"
+}

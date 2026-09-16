@@ -1,0 +1,9 @@
+{
+  "id": "harbor-01",
+  "prompt": "a small fishing boat returning to the pier, wide establishing shot, blue hour twilight, quiet northern harbor, muted film photography.",
+  "seed": 93928487,
+  "model": "stabilityai/sdxl-turbo",
+  "steps": 4,
+  "guidance_scale": 0.0,
+  "dtype": "float16"
+}

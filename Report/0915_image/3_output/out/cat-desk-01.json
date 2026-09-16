@@ -1,0 +1,9 @@
+{
+  "id": "cat-desk-01",
+  "prompt": "a tabby cat sitting at a desk looking at a laptop, eye-level medium shot, soft morning window light, tidy home office, flat vector illustration.",
+  "seed": 3860940689,
+  "model": "stabilityai/sdxl-turbo",
+  "steps": 4,
+  "guidance_scale": 0.0,
+  "dtype": "float16"
+}

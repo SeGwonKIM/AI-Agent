@@ -1,0 +1,7 @@
+# GPU(CUDA)가 있는 곳에서 설치합니다. torch 는 CUDA 버전에 맞는 것을 따로 받아야 해서
+# 공식 안내(https://pytorch.org)를 보고 설치하는 편이 확실합니다.
+torch
+diffusers
+transformers
+accelerate
+safetensors

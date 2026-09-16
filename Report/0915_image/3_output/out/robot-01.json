@@ -1,0 +1,9 @@
+{
+  "id": "robot-01",
+  "prompt": "a small repair robot tightening a bolt on a pipe, macro close-up, cool blue rim light, cluttered engine room, detailed concept art.",
+  "seed": 488736442,
+  "model": "stabilityai/sdxl-turbo",
+  "steps": 4,
+  "guidance_scale": 0.0,
+  "dtype": "float16"
+}
