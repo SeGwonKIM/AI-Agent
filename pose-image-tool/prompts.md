@@ -18,7 +18,7 @@
 
 ## 실제로 써 본 것
 
-`samples/output_01.png` 을 만든 값입니다.
+`samples/output_02.png` 을 만든 값입니다.
 
 ```
 프롬프트   a young man in a grey hoodie and jeans,
@@ -79,5 +79,5 @@ anime style, clean lineart
 
 | 날짜 | 참조 사진 | 프롬프트 요약 | STRENGTH | SEED | 결과 |
 |---|---|---|---|---|---|
-| 2026-09-16 | sportimg.jpg | grey hoodie 청년 | 0.8 | 42 | `samples/output_01.png` |
+| 2026-09-16 | sportimg.jpg | grey hoodie 청년 | 0.8 | 42 | `samples/output_02.png` |
 | | | | | | |

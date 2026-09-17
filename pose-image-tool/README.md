@@ -17,9 +17,10 @@ pose-image-tool/
 ├── README.md          이 파일
 ├── pose_tool.ipynb    코랩 노트북 (실행 결과가 함께 저장돼 있음)
 ├── prompts.md         실제로 써 본 프롬프트와 쓰는 요령
-└── samples/           결과 예시
-    ├── pose_01.png    뽑아낸 뼈대
-    └── output_01.png  그 뼈대로 만든 그림
+└── samples/           결과 예시 (왼쪽부터 순서대로)
+    ├── pose_01.jpg    참조로 쓴 사진
+    ├── output_01.png  거기서 뽑아낸 뼈대
+    └── output_02.png  그 뼈대로 만든 그림
 ```
 
 ## 어떻게 도는가
