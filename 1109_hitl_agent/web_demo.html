@@ -20,7 +20,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
             background-color: var(--bg);
             color: var(--text-main);
             padding: 24px;
@@ -34,6 +34,8 @@
             border-bottom: 1px solid var(--border);
             padding-bottom: 20px;
             margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
         }
         h1 { font-size: 24px; display: flex; align-items: center; gap: 10px; }
         .btn-run {
@@ -47,7 +49,18 @@
             cursor: pointer;
             transition: 0.2s;
         }
-        .btn-run:hover { background-color: var(--primary-hover); }
+        .btn-run:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+        .btn-reset {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-reset:hover { color: var(--text-main); border-color: var(--text-main); }
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -76,6 +89,7 @@
             display: grid;
             grid-template-columns: 1.2fr 1fr;
             gap: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
         }
         @media(max-width: 860px) { .task-card { grid-template-columns: 1fr; } }
         .badge {
@@ -107,7 +121,7 @@
             font-size: 14px;
         }
         .form-group { margin-bottom: 14px; }
-        label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+        label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
         input[type="text"], textarea {
             width: 100%;
             background: var(--bg);
@@ -117,6 +131,7 @@
             border-radius: 6px;
             font-size: 14px;
         }
+        input[type="text"]:focus, textarea:focus { outline: none; border-color: var(--primary); }
         .action-btns { display: flex; gap: 8px; margin-top: 14px; }
         .btn {
             flex: 1;
@@ -126,7 +141,9 @@
             font-weight: 600;
             cursor: pointer;
             font-size: 14px;
+            transition: 0.15s;
         }
+        .btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
         .btn-approve { background: var(--success); color: white; }
         .btn-edit { background: var(--warning); color: #1e293b; }
         .btn-reject { background: var(--danger); color: white; }
@@ -140,7 +157,23 @@
             border: 1px solid var(--border);
         }
         th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
-        th { background: rgba(0, 0, 0, 0.2); color: var(--text-muted); }
+        th { background: rgba(0, 0, 0, 0.2); color: var(--text-muted); font-weight: 600; }
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface);
+            border: 1px solid var(--success);
+            color: var(--text-main);
+            padding: 14px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 100;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -149,10 +182,13 @@
             <div>
                 <h1>🛡️ 틱톡 숏폼 자동발행 HITL 관제센터</h1>
                 <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
-                    모두의연구소 AI 에이전트 2기 | 9. 사람이 승인하는 에이전트 만들기 (LangGraph interrupt & resume)
+                    모두의연구소 AI 에이전트 2기 | 9. 사람이 승인하는 에이전트 만들기 (LangGraph interrupt & resume 데모)
                 </p>
             </div>
-            <button class="btn-run" onclick="runBatch()">🚀 배치 파이프라인 일괄 실행</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-reset" onclick="resetToInitial()">🔄 초기화</button>
+                <button class="btn-run" onclick="runBatch()">🚀 배치 파이프라인 일괄 재평가</button>
+            </div>
         </header>
 
         <div class="stats-grid">
@@ -169,7 +205,7 @@
                 <div class="stat-value danger" id="stat-pending">4</div>
             </div>
             <div class="stat-card">
-                <div class="stat-label">인간 승인/처리 완료</div>
+                <div class="stat-label">인간 검수/처리 완료</div>
                 <div class="stat-value" id="stat-reviewed">0</div>
             </div>
         </div>
@@ -190,6 +226,7 @@
                         <th>영상 길이</th>
                         <th>판정 결과</th>
                         <th>최종 상태</th>
+                        <th>비고 / 처리 코멘트</th>
                     </tr>
                 </thead>
                 <tbody id="all-tasks-tbody"></tbody>
@@ -197,42 +234,232 @@
         </section>
     </div>
 
+    <div id="toast" class="toast"></div>
+
     <script>
-        let taskData = [];
-
-        async function loadState() {
-            try {
-                const res = await fetch('/api/tasks');
-                const data = await res.json();
-                taskData = data.tasks;
-                renderUI();
-            } catch(e) {
-                console.error(e);
+        // 초기 8건의 고유 시나리오 데이터셋 (클라이언트 독립 실행 완벽 보장)
+        const INITIAL_DATA = [
+            {
+                "task_id": "TASK-20261109-001",
+                "channel_id": "korea_segwon",
+                "channel_name": "한국1 (청단사주타로)",
+                "country": "KR",
+                "cumulative_uploads": 42,
+                "raw_title": "친구 촉 소름돋을 때 공감 숏폼",
+                "media_file": "KR_002_07_친구_촉_소름돋을때.mp4",
+                "duration_seconds": 32,
+                "caption": "친구 촉 소름돋을 때 👹✨ 오늘 하루도 운수대통 기운 받아가세요!",
+                "hashtags": ["#사주", "#타로", "#공감숏폼", "#토쿤"],
+                "text_content": "진짜 친구 촉은 과학인 것 같아... 소름 돋았던 썰 풀어봄",
+                "is_pilot": false,
+                "approval_status": "auto_approved",
+                "is_published": true,
+                "published_at": "2026-11-09 15:20:01",
+                "criteria_failures": [],
+                "risk_score": 0.1,
+                "comment": "모든 기준(규격, 어휘, 계정 신뢰도) 완벽 충족으로 자동 통과"
+            },
+            {
+                "task_id": "TASK-20261109-002",
+                "channel_id": "japan_tokkun",
+                "channel_name": "일본 (토쿤 재팬)",
+                "country": "JP",
+                "cumulative_uploads": 38,
+                "raw_title": "토쿤 일본어 일상 회화 14편",
+                "media_file": "JP_014_nallijabeseu.mp4",
+                "duration_seconds": 28,
+                "caption": "韓国で今バズってる言葉 トッくんが使ってみた！👹✨",
+                "hashtags": ["#トッくん", "#日常会話", "#韓国語", "#アニメ"],
+                "text_content": "韓国で今バズってる言葉をトッくんが使ってみたよ！みんな知ってた？",
+                "is_pilot": false,
+                "approval_status": "auto_approved",
+                "is_published": true,
+                "published_at": "2026-11-09 15:20:02",
+                "criteria_failures": [],
+                "risk_score": 0.15,
+                "comment": "일본 현지 일상 어휘 및 표준 숏폼 규격 준수로 자동 통과"
+            },
+            {
+                "task_id": "TASK-20261109-003",
+                "channel_id": "thailand_tokkun",
+                "channel_name": "태국 (토쿤 타이)",
+                "country": "TH",
+                "cumulative_uploads": 29,
+                "raw_title": "태국 현지 야식 소개 및 사주 운세",
+                "media_file": "TH_003_night_snack_risk.mp4",
+                "duration_seconds": 35,
+                "caption": "Tokkun Night Market! 👹✨ 야시장 음식 먹고 사원 참배 추천",
+                "hashtags": ["#Tokkun", "#ThailandFood", "#NightMarket"],
+                "text_content": "방콕 야시장에서 음식 먹고 불교 성지 사원 방문 시 절대 해서는 안 될 행동 주의 (종교/사원 민감 텍스트 포함)",
+                "is_pilot": false,
+                "approval_status": "pending_human",
+                "is_published": false,
+                "published_at": null,
+                "criteria_failures": ["[기준 1 위반] TH 현지 문화/종교 민감어 감지: 사원, 불교 (위험점수: 0.85)"],
+                "risk_score": 0.85,
+                "comment": ""
+            },
+            {
+                "task_id": "TASK-20261109-004",
+                "channel_id": "taiwan_tokkun",
+                "channel_name": "대만 (토쿤 타이완)",
+                "country": "TW",
+                "cumulative_uploads": 31,
+                "raw_title": "대만 야식 먹방 숏폼 ep03",
+                "media_file": "TW_006_tokkun_tw_ep03_night_snack.mp4",
+                "duration_seconds": 29,
+                "caption": "絕對不吃宵夜!! 我一定會瘦!",
+                "hashtags": ["#Tokkun"],
+                "text_content": "晚上11點：從今天開始真的禁止宵夜!! 減肥開始!!",
+                "is_pilot": false,
+                "approval_status": "pending_human",
+                "is_published": false,
+                "published_at": null,
+                "criteria_failures": ["[기준 2 위반] 필수 해시태그 부족: 현재 1개 (최소 3개 이상 필요)"],
+                "risk_score": 0.1,
+                "comment": ""
+            },
+            {
+                "task_id": "TASK-20261109-005",
+                "channel_id": "korea_new_biz",
+                "channel_name": "한국신규 (운세살롱 파일럿)",
+                "country": "KR",
+                "cumulative_uploads": 2,
+                "raw_title": "2027 신년운세 띠별 총운 미리보기",
+                "media_file": "KR_PILOT_002_newyear.mp4",
+                "duration_seconds": 45,
+                "caption": "2027년 붉은 말의 해! 대박 나는 띠 TOP 3 공개 🐴🔥",
+                "hashtags": ["#신년운세", "#띠별운세", "#사주팔자", "#운세살롱"],
+                "text_content": "새해 첫 기운을 잡는 사람들의 공통점! 이번 해 반드시 대박 날 띠는?",
+                "is_pilot": true,
+                "approval_status": "pending_human",
+                "is_published": false,
+                "published_at": null,
+                "criteria_failures": [
+                    "[기준 3 위반] 신규 런칭 계정 초기 보호: 누적 업로드 2회 (< 5회) - 인간 감독 필수",
+                    "[기준 3 위반] 신규 파일럿 시리즈 1호 영상 - 브랜딩 톤앤매너 인간 검수 필수"
+                ],
+                "risk_score": 0.2,
+                "comment": ""
+            },
+            {
+                "task_id": "TASK-20261109-006",
+                "channel_id": "japan_tokkun",
+                "channel_name": "일본 (토쿤 재팬)",
+                "country": "JP",
+                "cumulative_uploads": 39,
+                "raw_title": "토쿤 초단편 인사 숏폼",
+                "media_file": "JP_SHORT_001_hello.mp4",
+                "duration_seconds": 8,
+                "caption": "おはよ〜！☀️",
+                "hashtags": ["#トッくん", "#おはよう"],
+                "text_content": "今日も元気にいってらっしゃい！",
+                "is_pilot": false,
+                "approval_status": "pending_human",
+                "is_published": false,
+                "published_at": null,
+                "criteria_failures": [
+                    "[기준 2 위반] 영상 길이 미달: 8초 (최소 15초 이상 필수)",
+                    "[기준 2 위반] 필수 해시태그 부족: 현재 2개 (최소 3개 이상 필요)",
+                    "[기준 2 위반] 설명글 길이 부족: 현재 6자 (최소 10자 이상 권장)"
+                ],
+                "risk_score": 0.1,
+                "comment": ""
+            },
+            {
+                "task_id": "TASK-20261109-007",
+                "channel_id": "thailand_tokkun",
+                "channel_name": "태국 (토쿤 타이)",
+                "country": "TH",
+                "cumulative_uploads": 30,
+                "raw_title": "토쿤 틱톡 음악 댄스 챌린지",
+                "media_file": "TH_004_tokkun_dance.mp4",
+                "duration_seconds": 22,
+                "caption": "Tokkun Dance Challenge! 👹💃 เต้นตามโทกุนกันเถอะ",
+                "hashtags": ["#Tokkun", "#DanceChallenge", "#TikTokUni", "#น่ารัก"],
+                "text_content": "เต้นตามโทกุนง่ายๆ ได้ทั้งวัน สดใสรับเช้าวันใหม่!",
+                "is_pilot": false,
+                "approval_status": "auto_approved",
+                "is_published": true,
+                "published_at": "2026-11-09 15:20:04",
+                "criteria_failures": [],
+                "risk_score": 0.1,
+                "comment": "댄스 챌린지 음원 및 영상 규격 완벽 준수로 자동 통과"
+            },
+            {
+                "task_id": "TASK-20261109-008",
+                "channel_id": "taiwan_tokkun",
+                "channel_name": "대만 (토쿤 타이완)",
+                "country": "TW",
+                "cumulative_uploads": 32,
+                "raw_title": "대만 일상 스티커 출시 소식",
+                "media_file": "TW_007_line_sticker_launch.mp4",
+                "duration_seconds": 25,
+                "caption": "來自韓國的小鬼怪 Tokkun LINE貼圖新登場！👹✨",
+                "hashtags": ["#Tokkun", "#LINE貼圖", "#可愛", "#日常"],
+                "text_content": "厭世日常必備的LINE貼圖，快標記身邊的朋友一起看！",
+                "is_pilot": false,
+                "approval_status": "auto_approved",
+                "is_published": true,
+                "published_at": "2026-11-09 15:20:05",
+                "criteria_failures": [],
+                "risk_score": 0.1,
+                "comment": "라인 스티커 홍보 및 해시태그 정상 준수로 자동 통과"
             }
+        ];
+
+        let taskData = JSON.parse(JSON.stringify(INITIAL_DATA));
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => { t.style.display = 'none'; }, 3000);
         }
 
-        async function runBatch() {
-            const res = await fetch('/api/run_batch', { method: 'POST' });
-            await loadState();
+        function resetToInitial() {
+            taskData = JSON.parse(JSON.stringify(INITIAL_DATA));
+            renderUI();
+            showToast("🔄 모든 데이터와 승인 대기열이 초기 상태로 리셋되었습니다.");
         }
 
-        async function handleAction(taskId, action) {
-            const caption = document.getElementById(`cap-${taskId}`)?.value || '';
-            const tags = document.getElementById(`tag-${taskId}`)?.value || '';
+        function runBatch() {
+            renderUI();
+            showToast("🚀 8개 콘텐츠 배치 파이프라인 정밀 평가가 완료되었습니다!");
+        }
+
+        function handleAction(taskId, action) {
+            const task = taskData.find(t => t.task_id === taskId);
+            if (!task) return;
+
+            const caption = document.getElementById(`cap-${taskId}`)?.value || task.caption;
+            const tags = document.getElementById(`tag-${taskId}`)?.value || task.hashtags.join(', ');
             const comment = document.getElementById(`comm-${taskId}`)?.value || '';
 
-            await fetch('/api/resume', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    task_id: taskId,
-                    action: action,
-                    comment: comment,
-                    edited_caption: caption,
-                    edited_hashtags: tags.split(',').map(t => t.trim()).filter(Boolean)
-                })
-            });
-            await loadState();
+            const now = new Date().toTimeString().split(' ')[0];
+
+            if (action === 'approve') {
+                task.approval_status = 'approved';
+                task.is_published = true;
+                task.published_at = `2026-11-09 ${now}`;
+                task.comment = comment ? `[인간 즉시 승인] ${comment}` : '[인간 즉시 승인] 검수 통과 확인';
+                showToast(`✅ ${taskId} 건이 즉시 승인되어 틱톡 공식 채널에 발행되었습니다!`);
+            } else if (action === 'edit_and_approve') {
+                task.approval_status = 'edited_and_approved';
+                task.caption = caption;
+                task.hashtags = tags.split(',').map(t => t.trim()).filter(Boolean);
+                task.is_published = true;
+                task.published_at = `2026-11-09 ${now}`;
+                task.comment = comment ? `[인간 수정 승인] ${comment}` : `[인간 수정 승인] 캡션/태그 보강 후 발행`;
+                showToast(`🛠️ ${taskId} 건이 수정 후 승인되어 발행되었습니다!`);
+            } else if (action === 'reject') {
+                task.approval_status = 'rejected';
+                task.is_published = false;
+                task.comment = comment ? `[인간 반려] ${comment}` : '[인간 반려] 기준 미달로 발행 취소';
+                showToast(`❌ ${taskId} 건이 최종 반려되어 발행이 취소되었습니다.`);
+            }
+
+            renderUI();
         }
 
         function renderUI() {
@@ -247,7 +474,7 @@
 
             const pendingContainer = document.getElementById('pending-container');
             if (pendingTasks.length === 0) {
-                pendingContainer.innerHTML = '<div style="background: var(--surface); padding: 24px; border-radius: 8px; text-align: center; color: var(--success); font-weight: 600;">🎉 현재 승인 대기 중인 항목이 없습니다. (모든 건 처리 완료)</div>';
+                pendingContainer.innerHTML = '<div style="background: var(--surface); padding: 28px; border-radius: 12px; border: 1px dashed var(--success); text-align: center; color: var(--success); font-weight: 600; font-size: 16px;">🎉 현재 승인 대기 중인 항목이 없습니다. (모든 중단 건의 의사결정이 완료되었습니다)</div>';
             } else {
                 pendingContainer.innerHTML = pendingTasks.map(t => `
                     <div class="task-card">
@@ -259,11 +486,11 @@
                             </div>
                             <h3 style="font-size: 16px; margin-bottom: 8px;">🎬 ${t.raw_title}</h3>
                             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
-                                파일: <code>${t.media_file}</code> | 영상길이: <strong>${t.duration_seconds}초</strong> | 누적발행: ${t.cumulative_uploads}회
+                                미디어: <code>${t.media_file}</code> | 영상길이: <strong>${t.duration_seconds}초</strong> | 누적발행: ${t.cumulative_uploads}회
                             </p>
 
                             <div class="reason-box">
-                                <strong>🚨 파이프라인이 멈춘 이유:</strong>
+                                <strong>🚨 파이프라인이 멈춘 이유 (기준 위반 사항):</strong>
                                 <ul style="margin-left: 18px; margin-top: 4px;">
                                     ${t.criteria_failures.map(f => `<li>${f}</li>`).join('')}
                                 </ul>
@@ -271,7 +498,7 @@
 
                             <div class="consequence-box">
                                 <strong>⚡ 통과시키면 일어나는 일:</strong><br>
-                                즉시 ${t.country} 현지 틱톡 공식 채널로 영상이 영구 게시되며 전 세계 구독자에게 푸시 알림이 발송됩니다.
+                                즉시 ${t.country} 현지 틱톡 공식 채널(${t.channel_name})로 영상이 영구 게시되며 전 세계 구독자에게 푸시 알림이 발송됩니다.
                             </div>
                         </div>
 
@@ -286,7 +513,7 @@
                             </div>
                             <div class="form-group">
                                 <label>검수 코멘트 (사유 입력)</label>
-                                <input type="text" id="comm-${t.task_id}" placeholder="예: 해시태그 보강 후 승인">
+                                <input type="text" id="comm-${t.task_id}" placeholder="예: 캡션 민감어 제거 및 태그 보강 후 승인">
                             </div>
 
                             <div class="action-btns">
@@ -316,13 +543,14 @@
                         <td><code>${t.media_file}</code></td>
                         <td>${t.duration_seconds}초</td>
                         <td><span class="badge ${badgeClass}">${statusName}</span></td>
-                        <td>${t.is_published ? '✅ 틱톡 게시됨 (' + t.published_at.slice(11) + ')' : '⛔ 미게시'}</td>
+                        <td>${t.is_published ? '✅ 틱톡 게시됨 (' + (t.published_at ? t.published_at.slice(11) : '완료') + ')' : '⛔ 미게시'}</td>
+                        <td style="color: var(--text-muted); font-size: 13px;">${t.comment || '-'}</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        window.onload = loadState;
+        window.onload = renderUI;
     </script>
 </body>
 </html>
