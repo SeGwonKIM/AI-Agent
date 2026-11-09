@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>글로벌 틱톡 숏폼 자동발행 HITL 승인 관제센터</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-card: #334155;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #475569;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            padding: 24px;
+            line-height: 1.5;
+        }
+        .container { max-width: 1280px; margin: 0 auto; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+        h1 { font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        .btn-run {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-run:hover { background-color: var(--primary-hover); }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .stat-label { color: var(--text-muted); font-size: 14px; margin-bottom: 6px; }
+        .stat-value { font-size: 28px; font-weight: 700; }
+        .stat-value.danger { color: var(--danger); }
+        .stat-value.success { color: var(--success); }
+
+        .pending-section { margin-bottom: 36px; }
+        .section-title { font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .task-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+        }
+        @media(max-width: 860px) { .task-card { grid-template-columns: 1fr; } }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 6px;
+        }
+        .badge-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-info { background: rgba(59, 130, 246, 0.2); color: var(--primary); }
+        .badge-success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+
+        .reason-box {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 12px;
+            border-radius: 4px;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+        .consequence-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 14px;
+            font-size: 14px;
+        }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+        input[type="text"], textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .action-btns { display: flex; gap: 8px; margin-top: 14px; }
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-approve { background: var(--success); color: white; }
+        .btn-edit { background: var(--warning); color: #1e293b; }
+        .btn-reject { background: var(--danger); color: white; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--surface);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+        th { background: rgba(0, 0, 0, 0.2); color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1>🛡️ 틱톡 숏폼 자동발행 HITL 관제센터</h1>
+                <p style="color: var(--text-muted); font-size: 14px; margin-top: 4px;">
+                    모두의연구소 AI 에이전트 2기 | 9. 사람이 승인하는 에이전트 만들기 (LangGraph interrupt & resume)
+                </p>
+            </div>
+            <button class="btn-run" onclick="runBatch()">🚀 배치 파이프라인 일괄 실행</button>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">전체 콘텐츠 건수</div>
+                <div class="stat-value" id="stat-total">8</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">전자동 통과 발행 (Auto-Passed)</div>
+                <div class="stat-value success" id="stat-auto">4</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">인간 승인 대기 (HITL Interrupted)</div>
+                <div class="stat-value danger" id="stat-pending">4</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">인간 승인/처리 완료</div>
+                <div class="stat-value" id="stat-reviewed">0</div>
+            </div>
+        </div>
+
+        <section class="pending-section">
+            <h2 class="section-title">🚨 인간 승인 대기열 (HITL 10초 의사결정 카드)</h2>
+            <div id="pending-container"></div>
+        </section>
+
+        <section>
+            <h2 class="section-title">📜 전체 파이프라인 처리 현황</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>작업 ID</th>
+                        <th>채널 / 국가</th>
+                        <th>동영상 파일</th>
+                        <th>영상 길이</th>
+                        <th>판정 결과</th>
+                        <th>최종 상태</th>
+                    </tr>
+                </thead>
+                <tbody id="all-tasks-tbody"></tbody>
+            </table>
+        </section>
+    </div>
+
+    <script>
+        let taskData = [];
+
+        async function loadState() {
+            try {
+                const res = await fetch('/api/tasks');
+                const data = await res.json();
+                taskData = data.tasks;
+                renderUI();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function runBatch() {
+            const res = await fetch('/api/run_batch', { method: 'POST' });
+            await loadState();
+        }
+
+        async function handleAction(taskId, action) {
+            const caption = document.getElementById(`cap-${taskId}`)?.value || '';
+            const tags = document.getElementById(`tag-${taskId}`)?.value || '';
+            const comment = document.getElementById(`comm-${taskId}`)?.value || '';
+
+            await fetch('/api/resume', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    task_id: taskId,
+                    action: action,
+                    comment: comment,
+                    edited_caption: caption,
+                    edited_hashtags: tags.split(',').map(t => t.trim()).filter(Boolean)
+                })
+            });
+            await loadState();
+        }
+
+        function renderUI() {
+            const pendingTasks = taskData.filter(t => t.approval_status === 'pending_human');
+            const autoPassed = taskData.filter(t => t.approval_status === 'auto_approved').length;
+            const reviewed = taskData.filter(t => ['approved', 'edited_and_approved', 'rejected'].includes(t.approval_status)).length;
+
+            document.getElementById('stat-total').innerText = taskData.length;
+            document.getElementById('stat-auto').innerText = autoPassed;
+            document.getElementById('stat-pending').innerText = pendingTasks.length;
+            document.getElementById('stat-reviewed').innerText = reviewed;
+
+            const pendingContainer = document.getElementById('pending-container');
+            if (pendingTasks.length === 0) {
+                pendingContainer.innerHTML = '<div style="background: var(--surface); padding: 24px; border-radius: 8px; text-align: center; color: var(--success); font-weight: 600;">🎉 현재 승인 대기 중인 항목이 없습니다. (모든 건 처리 완료)</div>';
+            } else {
+                pendingContainer.innerHTML = pendingTasks.map(t => `
+                    <div class="task-card">
+                        <div>
+                            <div style="margin-bottom: 8px;">
+                                <span class="badge badge-info">${t.country}</span>
+                                <span class="badge badge-danger">위험도: ${(t.risk_score * 100).toFixed(0)}%</span>
+                                <strong>${t.task_id}</strong> - ${t.channel_name}
+                            </div>
+                            <h3 style="font-size: 16px; margin-bottom: 8px;">🎬 ${t.raw_title}</h3>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+                                파일: <code>${t.media_file}</code> | 영상길이: <strong>${t.duration_seconds}초</strong> | 누적발행: ${t.cumulative_uploads}회
+                            </p>
+
+                            <div class="reason-box">
+                                <strong>🚨 파이프라인이 멈춘 이유:</strong>
+                                <ul style="margin-left: 18px; margin-top: 4px;">
+                                    ${t.criteria_failures.map(f => `<li>${f}</li>`).join('')}
+                                </ul>
+                            </div>
+
+                            <div class="consequence-box">
+                                <strong>⚡ 통과시키면 일어나는 일:</strong><br>
+                                즉시 ${t.country} 현지 틱톡 공식 채널로 영상이 영구 게시되며 전 세계 구독자에게 푸시 알림이 발송됩니다.
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="form-group">
+                                <label>캡션 (설명글)</label>
+                                <textarea id="cap-${t.task_id}" rows="3">${t.caption}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>해시태그 (쉼표로 구분)</label>
+                                <input type="text" id="tag-${t.task_id}" value="${t.hashtags.join(', ')}">
+                            </div>
+                            <div class="form-group">
+                                <label>검수 코멘트 (사유 입력)</label>
+                                <input type="text" id="comm-${t.task_id}" placeholder="예: 해시태그 보강 후 승인">
+                            </div>
+
+                            <div class="action-btns">
+                                <button class="btn btn-approve" onclick="handleAction('${t.task_id}', 'approve')">✅ 즉시 승인</button>
+                                <button class="btn btn-edit" onclick="handleAction('${t.task_id}', 'edit_and_approve')">🛠️ 수정 후 승인</button>
+                                <button class="btn btn-reject" onclick="handleAction('${t.task_id}', 'reject')">❌ 반려</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const allTbody = document.getElementById('all-tasks-tbody');
+            allTbody.innerHTML = taskData.map(t => {
+                let badgeClass = 'badge-info';
+                let statusName = t.approval_status;
+                if (t.approval_status === 'auto_approved') { badgeClass = 'badge-success'; statusName = '전자동 통과'; }
+                else if (t.approval_status === 'approved') { badgeClass = 'badge-success'; statusName = '인간 승인 완료'; }
+                else if (t.approval_status === 'edited_and_approved') { badgeClass = 'badge-info'; statusName = '수정 승인 완료'; }
+                else if (t.approval_status === 'rejected') { badgeClass = 'badge-danger'; statusName = '반려(취소)'; }
+                else if (t.approval_status === 'pending_human') { badgeClass = 'badge-danger'; statusName = '승인 대기 중'; }
+
+                return `
+                    <tr>
+                        <td><strong>${t.task_id}</strong></td>
+                        <td>${t.channel_name} (${t.country})</td>
+                        <td><code>${t.media_file}</code></td>
+                        <td>${t.duration_seconds}초</td>
+                        <td><span class="badge ${badgeClass}">${statusName}</span></td>
+                        <td>${t.is_published ? '✅ 틱톡 게시됨 (' + t.published_at.slice(11) + ')' : '⛔ 미게시'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        window.onload = loadState;
+    </script>
+</body>
+</html>
